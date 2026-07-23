@@ -23,6 +23,7 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 8024
+          hostPort: 8024
           name: http
         envFrom:
         - configMapRef:
