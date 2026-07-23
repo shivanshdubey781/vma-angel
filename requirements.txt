@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+motor
+pymongo
+pyjwt
+python-dotenv
+httpx
+numpy
+requests
+pyotp

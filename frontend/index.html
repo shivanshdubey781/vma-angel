@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMA Algo Trader — AngelOne</title>
+    <link rel="stylesheet" href="/style.css?v=101">
+</head>
+<body>
+    <header>
+        <h1>VMA Algo Trader</h1>
+        <div class="actions">
+            <div class="user-badge" id="user-display">Status: Disconnected</div>
+            <div id="last-login-display" style="font-size: 0.75rem; color: #cbd5e1; align-self: center; margin-right: 8px;">Last Login: --</div>
+            <button class="primary-btn manual-btn" onclick="openManualTrade()">Manual Trade</button>
+            <button class="primary-btn fake-ce-btn" onclick="triggerFakeSignal('CE')" style="background: #a855f7; color: white; border: none;">Fake CE Entry</button>
+            <button class="primary-btn fake-pe-btn" onclick="triggerFakeSignal('PE')" style="background: #ec4899; color: white; border: none;">Fake PE Entry</button>
+            <button class="primary-btn history-btn" onclick="showHistory()">Order History</button>
+            <button class="primary-btn login-btn" id="login-btn" onclick="login()">Connect (AngelOne)</button>
+        </div>
+    </header>
+
+    <div class="top-bar">
+        <div class="toggle-container">
+            <span class="label">VMA ALGO:</span>
+            <label class="switch">
+                <input type="checkbox" id="algo-toggle" onchange="toggleAlgo()">
+                <span class="slider"></span>
+            </label>
+            <span id="algo-status-text" style="font-weight:bold; color:#ef4444;">OFF</span>
+        </div>
+        <div class="toggle-container" style="padding: 5px 15px;">
+            <label class="label">Interval:</label>
+            <select id="interval-select" onchange="updateInterval()" style="border:none; background:transparent; font-weight:600; font-size:1rem; outline:none; cursor:pointer;">
+                <option value="ONE_MINUTE">1 Minute</option>
+                <option value="THREE_MINUTE">3 Minutes</option>
+                <option value="FIVE_MINUTE" selected>5 Minutes</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="card config-panel">
+            <h3>Algo Configuration</h3>
+            <div class="config-grid">
+                <div class="form-group">
+                    <label>Fast VMA Period</label>
+                    <input type="number" id="cfg-fast" value="5">
+                </div>
+                <div class="form-group">
+                    <label>Slow VMA Period</label>
+                    <input type="number" id="cfg-slow" value="9">
+                </div>
+                <div class="form-group">
+                    <label>Target Points</label>
+                    <input type="number" id="cfg-target" value="50">
+                </div>
+                <div class="form-group">
+                    <label>Stop Loss Points</label>
+                    <input type="number" id="cfg-sl" value="30">
+                </div>
+                <div class="form-group">
+                    <label>Trailing SL Trigger (Pts)</label>
+                    <input type="number" id="cfg-trigger" value="20">
+                </div>
+                <div class="form-group">
+                    <label>Trailing SL Lock (Pts)</label>
+                    <input type="number" id="cfg-trail" value="15">
+                </div>
+                <div class="form-group">
+                    <label>Quantity (Lots)</label>
+                    <input type="number" id="cfg-qty" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Instrument</label>
+                    <input type="text" id="cfg-symbol" value="NIFTY 50" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Limit Buffer</label>
+                    <input type="number" step="0.05" id="cfg-buffer" value="2.0">
+                </div>
+                <div class="form-group">
+                    <label>Entry Mode</label>
+                    <select id="cfg-entry-mode">
+                        <option value="confirmed">Confirmed (Candle Close)</option>
+                        <option value="immediate">Immediate (Crossover)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Strike Selection</label>
+                    <select id="cfg-strike-selection">
+                        <option value="A">A (100) Strike</option>
+                        <option value="B">B (50) Strike</option>
+                    </select>
+                </div>
+                <div style="font-size: 0.8rem; color: #888; margin-top: -5px; margin-bottom: 12px; line-height: 1.4;">
+                    * B(50) - Mon & Tuesday<br>
+                    * A(100) - Wed, Thurs, Friday
+                </div>
+                <button class="save-btn btn-success" onclick="saveConfig()">Save Configuration</button>
+            </div>
+        </div>
+
+        <div class="card live-monitor">
+            <h3>Live Market Monitor</h3>
+            <p><span>Fast VMA</span> <span id="mon-fast">--</span></p>
+            <p><span>Slow VMA</span> <span id="mon-slow">--</span></p>
+            <p><span>Live Signal</span> <span id="mon-signal" class="bold">--</span></p>
+            <p><span>Last Trade</span> <span id="mon-trade" style="font-size:0.9rem; color:#64748b;">--</span></p>
+        </div>
+        
+        <div class="card active-trades">
+            <h3>Active Trades</h3>
+            <div id="active-trades-container">
+                <p style="color: #888; font-size: 0.9rem; text-align: center;">No active trades</p>
+            </div>
+        </div>
+
+        <div class="card signals-table">
+            <h3>VMA Signal History (Last 30 bars)</h3>
+            <div id="signals-container" style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
+                <table class="signals-history">
+                    <thead>
+                        <tr>
+                            <th>TIME</th>
+                            <th>CLOSE</th>
+                            <th>SHORT VMA</th>
+                            <th>LONG VMA</th>
+                            <th>SIGNAL</th>
+                            <th>CONFIRM</th>
+                            <th>QUALITY</th>
+                            <th>TREND</th>
+                            <th>SKIP REASON</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signals-tbody">
+                        <tr><td colspan="9" style="text-align: center; color: #888;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Trade Modal -->
+    <div id="manual-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close-btn" onclick="closeManualTrade()">&times;</span>
+            <h2>Execute Manual Trade</h2>
+            <div style="margin-top: 15px;">
+                <label>Direction (CE/PE Entry)</label>
+                <select id="man-side" onchange="updateManualStrikePreview()" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px;">
+                    <option value="BUY">BUY (Bullish / CE)</option>
+                    <option value="SELL">SELL (Bearish / PE)</option>
+                </select>
+                <div id="man-strike-info" style="background: #f1f5f9; border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; font-size: 0.9rem;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+                        <span style="color:#64748b;">Target Strike:</span>
+                        <strong id="man-strike-name" style="color: var(--primary);">Loading...</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#64748b;">Option LTP:</span>
+                        <strong id="man-strike-price" style="color: var(--success);">--</strong>
+                    </div>
+                </div>
+                <label>Quantity (Lots)</label>
+                <input type="number" id="man-qty" value="1" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px;" />
+                <label>Limit Buffer Points</label>
+                <input type="number" step="0.1" id="man-price" value="2.0" style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px;" />
+                <button class="primary-btn btn-success" style="width: 100%; padding: 12px; background: var(--success);" onclick="executeManual()">Execute Trade</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeHistory()">&times;</span>
+            <h2>Order History</h2>
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th><th>Symbol</th><th>Dir</th><th>Qty</th><th>Entry</th><th>Exit</th><th>Status</th><th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js?v=106"></script>
+</body>
+</html>

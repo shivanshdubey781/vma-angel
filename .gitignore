@@ -1,0 +1,29 @@
+# Environment variables and secrets
+.env
+._*
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Sensitive tokens and logs
+*.json
+!package.json
+*.log

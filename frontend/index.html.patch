@@ -1,0 +1,35 @@
+--- /Users/singhhariom3794gmail.com/Desktop/master/vma-algo/frontend/index.html
++++ /Users/singhhariom3794gmail.com/Desktop/master/vma-algo/frontend/index.html
+@@ -19,6 +19,7 @@
+         <div class="actions">
+             <div class="user-badge" id="user-display">Status: Disconnected</div>
+             <button class="primary-btn manual-btn" onclick="window.open('http://195.35.23.125:5012/', '_blank')">Manual Trade</button>
++            <button class="primary-btn history-btn" onclick="showHistory()">Order History</button>
+             <button class="primary-btn login-btn" id="login-btn" onclick="login()">Login</button>
+         </div>
+     </header>
+@@ -82,6 +83,23 @@
+         </div>
+     </div>
+ 
++    <!-- History Modal -->
++    <div id="history-modal" class="modal">
++        <div class="modal-content">
++            <span class="close-btn" onclick="closeHistory()">&times;</span>
++            <h2>Order History</h2>
++            <div class="history-table-container">
++                <table class="history-table">
++                    <thead>
++                        <tr>
++                            <th>Time</th><th>Symbol</th><th>Dir</th><th>Qty</th><th>Entry</th><th>Exit</th><th>Status</th><th>Reason</th>
++                        </tr>
++                    </thead>
++                    <tbody id="history-tbody"></tbody>
++                </table>
++            </div>
++        </div>
++    </div>
++
+     <script src="/app.js?v=6"></script>
+ </body>
+ </html>
