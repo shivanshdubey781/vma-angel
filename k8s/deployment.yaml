@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vma-algo-deployment
+  namespace: default
+  labels:
+    app: vma-algo
+spec:
+  replicas: 1  # Exactly 1 replica to prevent duplicate algo order execution
+  selector:
+    matchLabels:
+      app: vma-algo
+  template:
+    metadata:
+      labels:
+        app: vma-algo
+    spec:
+      containers:
+      - name: vma-algo
+        image: shivanshdubey781/vma-angel:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8024
+          name: http
+        envFrom:
+        - configMapRef:
+            name: vma-configmap
+        - secretRef:
+            name: vma-secret
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/algo/status
+            port: 8024
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /api/algo/status
+            port: 8024
+          initialDelaySeconds: 5
+          periodSeconds: 10

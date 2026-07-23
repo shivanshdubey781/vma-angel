@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vma-configmap
+  namespace: default
+data:
+  MONGO_DB: "VMA"
+  OHLC_MONGO_DB: "trading_bot_db"
+  OHLC_MONGO_COLLECTION_1MIN: "OHLC"
+  OHLC_MONGO_COLLECTION_3MIN: "OHLC3"
+  OHLC_MONGO_COLLECTION_5MIN: "OHLC5"
