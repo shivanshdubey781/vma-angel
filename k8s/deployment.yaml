@@ -7,6 +7,8 @@ metadata:
     app: vma-algo
 spec:
   replicas: 1  # Exactly 1 replica to prevent duplicate algo order execution
+  strategy:
+    type: Recreate  # Terminates old pod before creating new pod to prevent duplicate order placement
   selector:
     matchLabels:
       app: vma-algo
