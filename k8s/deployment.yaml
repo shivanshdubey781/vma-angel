@@ -20,7 +20,7 @@ spec:
       containers:
       - name: vma-algo
         image: vma-angel:latest
-        imagePullPolicy: Never
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8024
           hostPort: 8024
