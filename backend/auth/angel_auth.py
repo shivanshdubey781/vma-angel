@@ -88,6 +88,7 @@ def run_auto_login() -> dict:
                 {"client_id": client_id},
                 {"$set": {
                     "client_id": client_id,
+                    "token": jwt_token,
                     "jwt_token": jwt_token,
                     "refresh_token": refresh_token,
                     "feed_token": feed_token,

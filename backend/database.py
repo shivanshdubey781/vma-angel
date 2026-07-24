@@ -22,7 +22,11 @@ async def connect_to_mongo():
     db_instance.sync_db = db_instance.sync_client[MONGO_DB]
     
     # Initialize indexes
-    await db_instance.db.sessions.create_index("token", unique=True)
+    try:
+        await db_instance.db.sessions.drop_index("token_1")
+    except Exception:
+        pass
+    await db_instance.db.sessions.create_index("client_id", unique=True)
     await db_instance.db.trades.create_index("trade_id", unique=True)
     logger.info("MongoDB connected and indexes verified.")
 
