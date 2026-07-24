@@ -84,6 +84,17 @@ def run_auto_login() -> dict:
             from ..database import get_sync_db
             db = get_sync_db()
             now = datetime.now(IST).replace(tzinfo=None)
+            
+            # Safely drop legacy token_1 index and clean corrupt null token docs
+            try:
+                db.sessions.drop_index("token_1")
+            except Exception:
+                pass
+            try:
+                db.sessions.delete_many({"token": None})
+            except Exception:
+                pass
+
             db.sessions.update_one(
                 {"client_id": client_id},
                 {"$set": {
